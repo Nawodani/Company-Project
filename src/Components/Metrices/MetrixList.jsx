@@ -1,10 +1,49 @@
-import React, { useState } from 'react';
+import React, { Component } from 'react';
 import MetrixListItems from './MetrixListItems';
 import StrategyListNames from './../Strategies/StrategyListNames';
 
-function MetrixList() {
+class MetrixList extends Component{
 
-  const metrixList = [
+  constructor(props) {
+    super(props);
+
+    this.state = {
+        dir:[],
+        item:{
+            name:"",
+            description:""
+        },
+        isEditing:false,
+        temp_index:null
+    }
+
+    this.handleChange = this.handleChange.bind(this)
+    this.add = this.add.bind(this)
+    // this.delete = this.delete.bind(this)
+    // this.edit = this.edit.bind(this)
+    // this.update = this.update.bind(this)
+    // this.view = this.view.bind(this)
+}
+
+handleChange(event){
+  const name = event.target.name;
+  const value = event.target.value;
+  let item = this.state.item;
+
+  item[name] = value;
+
+  this.setState({item:item})
+}
+
+add(e){
+  e.preventDefault()
+  let dir = this.state.dir;
+  dir.push(this.state.item)
+  this.setState({dir:dir, item:{name:"", description:""}})
+  console.log(this.state.dir)
+}
+
+  metrixList = [
     {
       id: 1,
       strategy: "Increase Sales",
@@ -28,7 +67,7 @@ function MetrixList() {
     },
   ]
 
-  const strategyList = [
+  strategyList = [
     {
       id: 1,
       strategyName: "Increase Sales"
@@ -39,9 +78,13 @@ function MetrixList() {
     }
   ]
 
-  const metrixListComponent = () => {
+  handleSubmit = (e) => {
+    
+  }
+
+  metrixListComponent = () => {
     return (
-      metrixList.map(aMetrix => {
+      this.metrixList.map(aMetrix => {
         return (
           <MetrixListItems
             key={aMetrix.id}
@@ -55,9 +98,9 @@ function MetrixList() {
     );
   }
 
-  const strategyListComponent = () => {
+  strategyListComponent = () => {
     return (
-      strategyList.map(aName => {
+      this.strategyList.map(aName => {
         return (
           <StrategyListNames
             key={aName.id}
@@ -68,11 +111,12 @@ function MetrixList() {
     );
   }
 
+  render(){
   return (
     <div>
       <h1>Matrix List</h1>
       <hr />
-      <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+      <div className="d-grid gap-2 d-md-flex justify-content-md-end">
         <button type="button" className="btn btn-primary me-md-5" data-bs-toggle="modal" data-bs-target="#exampleModal">Add New Metrix</button>
 
         <div className="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -83,18 +127,18 @@ function MetrixList() {
                 <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div className="modal-body">
-                <form>
+                <form method="POST" onSubmit={this.state.isEditing ? this.update : this.add}>
                   <div className="mb-3">
                     <label for="recipient-name" className="col-form-label">Strategy:</label>
                     <select className="form-select" aria-label="Default select example">
-                      {strategyList.map(aName =>
+                      {this.strategyList.map(aName =>
                         <option value={aName.id}>{aName.strategyName}</option>
                       )};
                     </select>
                   </div>
                   <div className="mb-3">
                     <label for="recipient-name" className="col-form-label">Name:</label>
-                    <input type="text" className="form-control" id="recipient-name" />
+                    <input type="text" name='name' className="form-control" value={this.state.item.name} onChange={this.handleChange} />
                   </div>
                   <div className="mb-3">
                     <label for="message-text" className="col-form-label">Description:</label>
@@ -102,16 +146,16 @@ function MetrixList() {
                   </div>
                 </form>
               </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save</button>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" className="btn btn-primary">Save</button>
               </div>
             </div>
           </div>
         </div>
 
       </div>
-      <div className='container'>
+      <table className="table table-striped">
         <div className="row align-items-center">
           <div className="col">Strategy</div>
           <div className="col">Metrix Id</div>
@@ -119,12 +163,14 @@ function MetrixList() {
           <div className="col">Description</div>
           <div className="col">Action</div>
         </div>
-      </div>
+      </table>
       <ul>
-        {metrixListComponent()}
+        {this.metrixListComponent()}
+        {this.state.dir}
       </ul>
     </div>
   );
+}
 }
 
 export default MetrixList;
