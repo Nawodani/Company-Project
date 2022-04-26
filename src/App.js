@@ -3,8 +3,8 @@ import { BrowserRouter, Route, Routes, } from 'react-router-dom';
 
 import StrategyList from './Components/Strategies/StrategyList';
 import MetrixList from './Components/Metrices/MetrixList';
-import KanbanBoard from './Components/KanbanBoard/KanbanBoard';
 import Navbar from './Components/Navbar/Navbar';
+import KanbanBoard from './Components/KanbanBoard/KanbanBoard';
 
 function App() {
   return (

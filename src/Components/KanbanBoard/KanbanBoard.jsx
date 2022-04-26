@@ -1,149 +1,139 @@
-import React, { useState } from "react";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
-import { v4 as uuidv4 } from 'uuid';
+import React from 'react';
+import KanbanColumn from './KanbanColumn';
+import StrategyListNames from '../Strategies/StrategyListNames';
 
-const itemsFromBackend = [
-  { id: uuidv4(), content: "First Metrix" },
-  { id: uuidv4(), content: "Second Metrix" },
-  { id: uuidv4(), content: "Third Metrix" },
-  { id: uuidv4(), content: "Fourth Metrix" },
-  { id: uuidv4(), content: "Fifth Metrix" }
+class KanbanBoard extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = ({
+			isLoading: true,
+			metrics: [],
+			draggedOverCol: 0,
+		});
+		this.handleOnDragEnter = this.handleOnDragEnter.bind(this);
+		this.handleOnDragEnd = this.handleOnDragEnd.bind(this);
+		this.columns = [
+			{ name: 'Q1-2022', stage: 1 },
+			{ name: 'Q2-2022', stage: 2 },
+			{ name: 'Q3-2022', stage: 3 },
+			{ name: 'Q4-2022', stage: 4 }
+		];
+	}
+
+	componentDidMount() {
+		this.setState({ metrics: metrixList, isLoading: false });
+	}
+
+	handleOnDragEnter(e, stageValue) {
+		this.setState({ draggedOverCol: stageValue });
+	}
+
+	handleOnDragEnd(e, metrix) {
+		const updatedmetrics = this.state.metrics.slice(0);
+		updatedmetrics.find((metrixObject) => { return metrixObject.name === metrix.name; }).metrixStage = this.state.draggedOverCol;
+		this.setState({ metrics: updatedmetrics });
+	}
+
+	strategyListComponent = () => {
+		return (
+			this.strategyList.map(aName => {
+				return (
+					<StrategyListNames
+						key={aName.id}
+						name={aName.strategyName}
+					/>
+				)
+			})
+		);
+	}
+
+	render() {
+		if (this.state.isLoading) {
+			return (<h3>Loading...</h3>);
+		}
+
+		return (
+			<div>
+				<div className="mb-3">
+					<label htmlFor="recipient-name" className="col-form-label">Select Strategy:</label>
+					<select className="form-select" aria-label="Default select example">
+						{strategyList.map(aName =>
+							<option value={aName.id} key={aName.id}>{aName.strategyName}</option>
+						)};
+					</select>
+				</div>
+				{this.columns.map((column) => {
+					return (
+						<KanbanColumn
+							name={column.name}
+							stage={column.stage}
+							metrics={this.state.metrics.filter((metrix) => { return parseInt(metrix.metrixStage, 10) === column.stage; })}
+							onDragEnter={this.handleOnDragEnter}
+							onDragEnd={this.handleOnDragEnd}
+							key={column.stage}
+						/>
+					);
+				})}
+			</div>
+		);
+	}
+}
+
+
+let metrixList = [
+	{
+		name: 'Metrix 1',
+		description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam posuere dui vel urna egestas rutrum. ',
+		metrixStage: 1,
+		strategy: "Decrease Expences"
+	},
+	{
+		name: 'Metrix 2',
+		description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam posuere dui vel urna egestas rutrum. ',
+		metrixStage: 1,
+		strategy: "Decrease Expences"
+	},
+	{
+		name: 'Metrix 3',
+		description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam posuere dui vel urna egestas rutrum. ',
+		metrixStage: 1,
+		strategy: "Increase Sales"
+	},
+	{
+		name: 'Metrix 4',
+		description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam posuere dui vel urna egestas rutrum. ',
+		metrixStage: 2,
+		strategy: "Decrease Expences"
+	},
+	{
+		name: 'Metrix 5',
+		description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam posuere dui vel urna egestas rutrum. ',
+		metrixStage: 3,
+		strategy: "Increase Sales"
+	},
+	{
+		name: 'Metrix 6',
+		description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam posuere dui vel urna egestas rutrum. ',
+		metrixStage: 3,
+		strategy: "Decrease Expences"
+	},
+	{
+		name: 'Metrix 7',
+		description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam posuere dui vel urna egestas rutrum. ',
+		metrixStage: 4,
+		strategy: "Increase Sales"
+	},
 ];
 
-const columnsFromBackend = {
-  [uuidv4()]: {
-    name: "Q1-2022",
-    items: itemsFromBackend
-  },
-  [uuidv4()]: {
-    name: "Q2-2022",
-    items: []
-  },
-  [uuidv4()]: {
-    name: "Q3-2022",
-    items: []
-  },
-  [uuidv4()]: {
-    name: "Q4-2022",
-    items: []
-  }
-};
-
-const onDragEnd = (result, columns, setColumns) => {
-  if (!result.destination) return;
-  const { source, destination } = result;
-
-  if (source.droppableId !== destination.droppableId) {
-    const sourceColumn = columns[source.droppableId];
-    const destColumn = columns[destination.droppableId];
-    const sourceItems = [...sourceColumn.items];
-    const destItems = [...destColumn.items];
-    const [removed] = sourceItems.splice(source.index, 1);
-    destItems.splice(destination.index, 0, removed);
-    setColumns({
-      ...columns,
-      [source.droppableId]: {
-        ...sourceColumn,
-        items: sourceItems
-      },
-      [destination.droppableId]: {
-        ...destColumn,
-        items: destItems
-      }
-    });
-  } else {
-    const column = columns[source.droppableId];
-    const copiedItems = [...column.items];
-    const [removed] = copiedItems.splice(source.index, 1);
-    copiedItems.splice(destination.index, 0, removed);
-    setColumns({
-      ...columns,
-      [source.droppableId]: {
-        ...column,
-        items: copiedItems
-      }
-    });
-  }
-};
-
-function KanbanBoard() {
-  const [columns, setColumns] = useState(columnsFromBackend);
-  return (
-    <div style={{ display: "flex", justifyContent: "center", height: "100%" }}>
-      <DragDropContext
-        onDragEnd={result => onDragEnd(result, columns, setColumns)}
-      >
-        {Object.entries(columns).map(([columnId, column], index) => {
-          return (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center"
-              }}
-              key={columnId}
-            >
-              <h2>{column.name}</h2>
-              <div style={{ margin: 8 }}>
-                <Droppable droppableId={columnId} key={columnId}>
-                  {(provided, snapshot) => {
-                    return (
-                      <div
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                        style={{
-                          background: snapshot.isDraggingOver
-                            ? "lightblue"
-                            : "lightgrey",
-                          padding: 4,
-                          width: 250,
-                          minHeight: 500
-                        }}
-                      >
-                        {column.items.map((item, index) => {
-                          return (
-                            <Draggable
-                              key={item.id}
-                              draggableId={item.id}
-                              index={index}
-                            >
-                              {(provided, snapshot) => {
-                                return (
-                                  <div
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    style={{
-                                      userSelect: "none",
-                                      padding: 16,
-                                      margin: "0 0 8px 0",
-                                      minHeight: "50px",
-                                      backgroundColor: snapshot.isDragging
-                                        ? "#263B4A"
-                                        : "#456C86",
-                                      color: "white",
-                                      ...provided.draggableProps.style
-                                    }}
-                                  >
-                                    {item.content}
-                                  </div>
-                                );
-                              }}
-                            </Draggable>
-                          );
-                        })}
-                        {provided.placeholder}
-                      </div>
-                    );
-                  }}
-                </Droppable>
-              </div>
-            </div>
-          );
-        })}
-      </DragDropContext>
-    </div>
-  );
-}
+let strategyList = [
+	{
+		id: 1,
+		strategyName: "Increase Sales"
+	},
+	{
+		id: 2,
+		strategyName: "Decrease Expences"
+	}
+]
 
 export default KanbanBoard;
